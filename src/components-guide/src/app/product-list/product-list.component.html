@@ -1,0 +1,104 @@
+<p>product-list compponent works!</p>
+
+<h2>1、插值表达式</h2>
+
+<p>title：{{title}}</p>
+
+<p>1+2+3+4+5={{1+2+3+4+5}}</p>
+
+<h2>2、模板绑定语法</h2>
+
+<h3>2.1、从数据源到视图</h3>
+
+<p>
+  <a href='{{url}}'>使用插值表达式进行绑定</a>
+</p>
+<p>
+  <a [href]='url' [style.color]='fontColor'>使用 [] 进行绑定</a>
+</p>
+<p>
+  <a bind-href='url'>使用 bind 进行绑定</a>
+</p>
+<p>
+  <span [innerHtml]="styleProperty"></span>
+</p>
+
+
+<h3>2.2、从视图到数据源</h3>
+
+<p>
+  <button (click)="getUser()">使用 () 进行绑定</button>
+</p>
+<p>
+  <button on-click="getUser()">使用 on 进行绑定</button>
+</p>
+
+<h3>2.3、数据双向绑定 --- 需要在 AppModule 中添加对于 FormsModule 的引用</h3>
+
+<p>
+  <input type="text" id="userName" [(ngModel)]="name">
+</p>
+<p>
+  <input type="text" bindon-ngModel="name">
+</p>
+
+
+<h2>3、事件绑定</h2>
+
+<input type="text" (keyup)="getMsg($event)">
+<p>输入的值：{{msg}}</p>
+
+<input type="text" #refMsgInput (keyup)="getRefMsg(refMsgInput.value)">
+<p>通过模板引入变量的方式获取到输入的值：{{refMsg}}</p>
+
+<h2>4、指令</h2>
+
+<h3>4.1、属性型指令</h3>
+
+<p [ngClass]="inlineStyle">NgClass 属性指令</p>
+
+<p [ngStyle]="currentStyles">NgStyle 属性指令</p>
+
+<h3>4.2、结构型指令</h3>
+
+<p *ngIf="flag">NgIf 结构型指令</p>
+<button (click)="removeElement()">移除元素</button>
+
+<p>不使用 trackBy 跟踪属性</p>
+<div>
+  <p *ngFor="let item of products; let i = index;">
+    {{i+1}} - {{item.name}} --- {{item.price}}
+  </p>
+</div>
+<p>使用 trackBy 跟踪属性</p>
+<div>
+  <p *ngFor="let item of products; let i = index; trackBy: trackByIndex">
+    {{i+1}} - {{item.name}} --- {{item.price}}
+  </p>
+</div>
+<button (click)="addProduct()">新增</button>
+
+<p>
+  请选择配置
+  <select [(ngModel)]="config">
+    <option value="">请选择</option>
+    <option value="r7-3700x">AMD Ryzen 7 3700X</option>
+    <option value="i5-9400f">Intel i5 9400F</option>
+    <option value="i5-9600kf">Intel i5 9600KF</option>
+  </select>
+</p>
+<p> 配置描述 </p>
+<div [ngSwitch]="config">
+  <p *ngSwitchCase="'r7-3700x'">
+    一个能打得都木的~~~
+  </p>
+  <p *ngSwitchCase="'i5-9400f'">
+    挤牙膏的。。。
+  </p>
+  <p *ngSwitchCase="'i5-9600kf'">
+    别看了，我不是开封菜。。。
+  </p>
+  <p *ngSwitchDefault>
+    你选一个啊~~~
+  </p>
+</div>

@@ -604,7 +604,118 @@ export class ProductListComponent implements OnInit {
 
 #### 3.1、模板表达式中的特殊运算符
 
+angular 模板表达式是 javascript 的子集，相对于常见的 javascript 运算符，添加了三个特殊的运算符
+
+- 管道运算符
+
+  管道是一种特殊的函数，可以把运算符（|）左边的数据转换成期望呈现给视图的数据格式，例如，将时间进行格式化、将数据转换成 json 字符串的形式等等
+
+  可以针对一个数据使用多个管道进行串联，并且管道运算符的优先级比三元运算符（ ?: ）高
+
+  ```html
+  <h3>5.1、管道运算符</h3>
+  <div>
+    <p>产品信息 json 字符串</p>
+    {{products | json}}
+  </div>
+  ```
+
+  ![管道运算符的使用](./imgs/20200217210305.png)
+
+- 安全导航运算符
+
+  在视图中使用的属性值为 null or undefined 时，javascript 和 angular 会引发空指针异常并中断视图的渲染过程， 从而视图会渲染失败，而使用了安全导航运算符（?）后，视图依然会渲染，只是显示的值为空白
+
+  ```html
+  <h3>5.2、安全导航运算符</h3>
+  <p>第五个专案的名称为：{{products[5].name}}</p>
+  ```
+
+  ![视图渲染失败](./imgs/20200217212844.png)
+  
+  ```html
+  <p>第五个专案的名称为：{{products[5]?.name}}</p>
+  ```
+  
+  ![视图渲染成功](./imgs/20200217213016.png)
+  
+- 非空断言运算符
+
+  在 tsconfig.json 中启用 strictNullChecks 属性，typescript 将会强制开启严格的空值检查，在这种模式下，所有定义了类型的属性是不允许赋值为 null 的，当将属性赋值为 null，则会编译报错
+
+  ![严格空值检查](./imgs/20200217215218.png)
+  
+  非空断言运算符用来告诉编译器对特定的属性不做严格的空值校验，当属性值为 null or  undefined 时，不抛错误。在下面的代码中，在判断 obj 存在后，就不再针对 obj.name 进行校验
+
+  ```typescript
+  import { Component, OnInit } from '@angular/core';
+  
+  interface Person {
+      name: string;
+      age: number;
+    }
+  
+    @Component({
+      selector: 'app-product-list',
+      templateUrl: './product-list.component.html',
+      styleUrls: ['./product-list.component.scss']
+    })
+  
+    export class ProductListComponent implements OnInit {
+  
+      public obj: Person;     
+        
+      constructor() {
+      }
+        
+      ngOnInit(): void {
+      }
+  
+    }
+  ```
+  
+  ```html
+  <p *ngIf="obj">
+    <span>{{obj!.name}}</span>
+  </p>
+  ```
+  
+  非空断言运算符不会防止出现 null 或 undefined，只是不提示
+
 #### 3.2、常用的管道函数
+
+- 纯管道
+
+  有在它检测到输入值发生了纯变更时才会执行，但是会忽略对象内部的变更
+
+  纯变更是指对原始类型值（String、Number、Boolean、Symbol）的更改， 或者对对象引用（Date、Array、Function、Object）的更改
+
+- 非纯管道
+
+  每个组件的变更周期都会执行
+
+| 管道          | 作用                         | 示例                     |
+| ------------- | ---------------------------- | ------------------------ |
+| JsonPipe      | 将一个值转换成 json 字符串   | {{ value \| json }}      |
+| DatePipe      | 根据区域设置规则格式化日期值 | {{ value \| date }}      |
+| UpperCasePipe | 把文本转换成全大写形式       | {{ value \| uppercase }} |
+| LowerCasePipe | 把文本转换成全小写形式       | {{ value \| lowercase}}  |
+
+```html
+<h3>6.1、json 管道</h3>
+<p>{{products | json}}</p>
+
+<h3>6.2、date 管道</h3>
+<p>现在时间：{{date | date:'yyyy-MM-dd HH:mm:ss'}}</p>
+
+<h3>6.3、upper 管道</h3>
+<p>转换成全大写：{{url | uppercase}}</p>
+
+<h3>6.4、lower 管道</h3>
+<p>转换成全小写：{{url | lowercase}}</p>
+```
+
+![管道函数](./imgs/20200218203622.png)
 
 
 
@@ -624,4 +735,3 @@ export class ProductListComponent implements OnInit {
 [^2]: 元数据是用来描述数据的数据项，例如这里的 selector 是为了描述 Component 这个数据信息资源中抽取出来用于说明其特征的一个结构化的数据
 [^3]:property 是 dom 元素默认的基本属性，在 dom 初始化时会被全部创建，而 attribute 是 html 标签上定义的属性和值 =》[DOM 中 Property 和 Attribute 的区别](https://www.cnblogs.com/elcarim5efil/p/4698980.html)
 [^4]:这里的数据改变指的是会将原来的数据对象重新销毁然后重建的过程，因此像 push、unshift 这样的方法即使不添加 trackBy 也不会重新渲染整个 DOM，只会重新渲染改变的数据
-

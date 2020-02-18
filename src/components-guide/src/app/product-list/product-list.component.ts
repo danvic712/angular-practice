@@ -1,5 +1,10 @@
 import { Component, OnInit } from '@angular/core';
 
+interface Person {
+  name: string;
+  age: number;
+}
+
 /**
  * @Component() 装饰器，通过一个元数据对象来完成组件和视图间的关联，以及完成对于该组件的配置
  */
@@ -57,7 +62,15 @@ export class ProductListComponent implements OnInit {
 
   public config = '';
 
-  constructor() { }
+  public obj: Person;
+
+  public personAge: number;
+
+  public date = new Date();
+
+  constructor() {
+    //this.personAge = this.obj!.age;
+  }
 
   ngOnInit(): void {
     this.setInlineStyle();

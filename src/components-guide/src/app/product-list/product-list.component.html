@@ -1,4 +1,4 @@
-<p>product-list compponent works!</p>
+<!-- <p>product-list compponent works!</p>
 
 <h2>1、插值表达式</h2>
 
@@ -102,3 +102,33 @@
     你选一个啊~~~
   </p>
 </div>
+
+<h2>5、模板表达式运算符</h2>
+
+<h3>5.1、管道运算符</h3>
+<div>
+  <p>产品信息 json 字符串</p>
+  {{products | json}}
+</div>
+
+<h3>5.2、安全导航运算符</h3>
+<p>第五个专案的名称为：{{products[5]?.name}}</p>
+
+<h3>5.3、非空断言运算符</h3>
+<p *ngIf="obj">
+  <span>{{obj!.name}}</span>
+</p> -->
+
+<h2>6、管道</h2>
+
+<h3>6.1、json 管道</h3>
+<p>{{products | json}}</p>
+
+<h3>6.2、date 管道</h3>
+<p>现在时间：{{date | date:'yyyy-MM-dd HH:mm:ss'}}</p>
+
+<h3>6.3、upper 管道</h3>
+<p>转换成全大写：{{url | uppercase}}</p>
+
+<h3>6.4、lower 管道</h3>
+<p>转换成全小写：{{url | lowercase}}</p>

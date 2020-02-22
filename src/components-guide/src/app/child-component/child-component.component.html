@@ -1,0 +1,18 @@
+<p>父组件的 title 属性值：{{parentTitle}}</p>
+<p>
+  <button (click)="runParentFunc()">调用父组件的方法</button>
+</p>
+
+<p>
+  <label for="msg">信息：</label>
+  <input type="text" id="msg" [(ngModel)]="msg">
+</p>
+
+<p>
+  <button (click)="sendMsg()">通过 @Output 装饰器给父组件传递数据</button>
+</p>
+
+<button (click)="getServiceMsg()">获取服务中的数据值</button>
+<p>
+  服务中 msg 属性值：{{storageMsg}}
+</p>

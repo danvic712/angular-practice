@@ -721,9 +721,332 @@ angular 模板表达式是 javascript 的子集，相对于常见的 javascript 
 
 ### 4、组件之间的通信
 
-#### 4.1、子组件获取父组件信息
+#### 4.1、输入属性与输出属性
 
-#### 4.2、父组件获取子组件信息
+输入属性（@Input）和输出属性（@Output）用来在父子组件或指令中进行共享数据。@Input 用来获取父组件的数据，@Output 用来向外发送数据
+
+#### 4.2、子组件获取父组件信息
+
+- 在父组件中，调用子组件，并将需要传递的数据 or 方法绑定到子组件上
+
+  传递数据直接将父组件中的属性值赋值给绑定在子组件上的属性就可以了
+
+  传递方法时，绑定在子组件上的属性是父组件方法的名称，此处不能加 () ，否则就会直接执行该父组件的方法
+
+  在传递数据给子组件时，也可以通过 this 来指代父组件，从而将整个父组件作为数据绑定子组件上
+
+  ```html
+  <h2>父组件内容：</h2>
+  
+  <p>
+    <label for="title">标题：</label>
+    <input id="title" type="text" [(ngModel)]="title">
+  </p>
+  
+  <hr>
+  
+  <h2>子组件内容：</h2>
+  
+  <!--
+    将父组件的数据绑定到子组件上
+   -->
+  <app-child-component [parentTitle]="title" [parentGetMsg]='getMsg'></app-child-component>
+  ```
+
+  ![父组件传递数据给子组件](./imgs/20200222160240.png)
+
+- 在子组件中引入 Inupt，同时使用  @Input 装饰器来接收父组件传递的数据
+
+  ```typescript
+  // 引入 Input 接口
+  import { Component, OnInit, Input } from '@angular/core';
+  
+  @Component({
+    selector: 'app-child-component',
+    templateUrl: './child-component.component.html',
+    styleUrls: ['./child-component.component.scss']
+  })
+  export class ChildComponentComponent implements OnInit {
+  
+    // 获取父组件的数据
+    @Input() parentGetMsg: any;
+  
+    // 使用 setter 对父组件的数据进行深加工
+    private _title: string;
+    @Input()
+    set parentTitle(title: string) {
+      this._title = (title && title.trim()) || '父组件的 title 属性值为空';
+    }
+    get parentTitle(): string {
+      return this._title;
+    }
+  
+    constructor() { }
+  
+    ngOnInit(): void {
+    }
+  
+    runParentFunc() {
+      this.parentGetMsg();
+    }
+  }
+  ```
+
+  ```html
+  <p>父组件的 title 属性值：{{parentTitle}}</p>
+  <p>
+    <button (click)="runParentFunc()">调用父组件的方法</button>
+  </p>
+  ```
+
+  对于使用 @Input 装饰器获取到的父组件数据，我们通过在这个输入属性中 setter 方法中进行重新赋值
+
+  ![子组件获取父组件数据](./imgs/20200222161317.gif)
+
+#### 4.3、父组件获取子组件信息
+
+- 使用 @ViewChild 装饰器获取
+
+  在子组件上定义一个模板引用变量
+
+  ```html
+  <h2>父组件内容：</h2>
+  
+  <h3>1、使用 @ViewChild 装饰器获取子组件数据</h3>
+  
+  <p>
+    <button (click)="getChildMsg()">获取子组件的 msg 数据</button>
+  </p>
+  
+  <p>
+    <button (click)="runChildFunc()">调用子组件的方法</button>
+  </p>
+  
+  <hr>
+  
+  <h2>子组件内容：</h2>
+  
+  <!--
+    在子组件上定义一个模板引用变量
+   -->
+  <app-child-component #childComponent></app-child-component>
+  ```
+
+  在父组件中添加对于 ViewChild 的引用，然后使用 @ViewChild 装饰器来接收子组件的 dom 信息
+
+  ```typescript
+  // 引入 ViewChild
+  import { Component, OnInit, ViewChild } from '@angular/core';
+  
+  @Component({
+    selector: 'app-parent-component',
+    templateUrl: './parent-component.component.html',
+    styleUrls: ['./parent-component.component.scss']
+  })
+  export class ParentComponentComponent implements OnInit {
+  
+    // 通过 @ViewChild 装饰器来接收字组件的 dom 信息
+    @ViewChild('childComponent') child: any;
+  
+    constructor() {
+    }
+  
+    ngOnInit(): void {
+    }
+  
+    getMsg() {
+      alert('我是父组件的 getMsg 方法');
+    }
+  
+    getChildMsg() {
+      alert(this.child.msg);
+    }
+  }
+  ```
+
+  ![通过 @ViewChild 装饰器获取子组件数据](./imgs/20200222171623.gif)
+
+- 使用 @Output 装饰器配合 EventEmitter 实现
+
+  在子组件中引入 Output 和 EventEmitter，通过 @Output 装饰器定义一个事件触发器，然后就可以通过这个事件触发器的 emit 方法进行事件广播
+
+  ```typescript
+  // 引入 Output、EventEmitter
+  import { Component, OnInit, Output, EventEmitter } from '@angular/core';
+  
+  @Component({
+    selector: 'app-child-component',
+    templateUrl: './child-component.component.html',
+    styleUrls: ['./child-component.component.scss']
+  })
+  export class ChildComponentComponent implements OnInit {
+  
+    public msg = 'child title';
+  
+    // 定义一个事件触发器
+    @Output() childEmitter = new EventEmitter<string>();
+  
+    constructor() { }
+  
+    ngOnInit(): void {
+    }
+  
+    runParentFunc() {
+      this.parentGetMsg();
+    }
+  
+    sendMsg() {
+      this.childEmitter.emit(this.msg);
+    }
+  }
+  ```
+
+  当子组件进行事件广播时，就可以通过在子组件上使用事件绑定的方式绑定到一个父组件事件，通过 $event 获取到子组件传递的数据值
+
+  ```html
+  <h2>父组件内容：</h2>
+  
+  <h3>2、使用 @Output 装饰器配合 EventEmitter 获取子组件数据</h3>
+  
+  <p>{{childMsg}}</p>
+  
+  <hr>
+  
+  <h2>子组件内容：</h2>
+  
+  <!--
+    将子组件的事件广播绑定到父组件事件上
+   -->
+  <app-child-component (childEmitter)='childEmitMsg($event)'></app-child-component>
+  ```
+
+  ```typescript
+  import { Component, OnInit } from '@angular/core';
+  
+  @Component({
+    selector: 'app-parent-component',
+    templateUrl: './parent-component.component.html',
+    styleUrls: ['./parent-component.component.scss']
+  })
+  export class ParentComponentComponent implements OnInit {
+  
+    public childMsg: string;
+  
+    constructor() {
+    }
+  
+    ngOnInit(): void {
+    }
+  
+    childEmitMsg(event) {
+      this.childMsg = event;
+    }
+  }
+  ```
+
+  ![使用 @Output 装饰器获取子组件数据](./imgs/20200222202452.gif)
+
+#### 4.4、非父子组件之间的通信
+
+不管组件之间是否具有关联关系，都可以通过共享一个服务的方式来进行数据交互，也可以将需要进行共享的数据存储到存储介质中，通过直接读取这个存储介质中的数据进行通信
+
+- 创建一个服务，并添加到模块中
+
+  ```shell
+  ## 在 services/storage 路径下创建一个 storage 服务
+  ng g service services/storage/storage
+  ```
+
+  ```typescript
+  import { BrowserModule } from '@angular/platform-browser';
+  import { NgModule } from '@angular/core';
+  import { AppRoutingModule } from './app-routing.module';
+  import { AppComponent } from './app.component';
+  import { ProductListComponent } from './product-list/product-list.component';
+  import { FormsModule } from '@angular/forms';
+  import { ParentComponentComponent } from './parent-component/parent-component.component';
+  import { ChildComponentComponent } from './child-component/child-component.component';
+  
+  // 引入自定义的服务
+  import { StorageService } from './services/storage/storage.service';
+  
+  @NgModule({
+    declarations: [
+      AppComponent,
+      ProductListComponent,
+      ParentComponentComponent,
+      ChildComponentComponent
+    ],
+    imports: [
+      BrowserModule,
+      AppRoutingModule,
+      FormsModule
+    ],
+    // 配置自定义的服务
+    providers: [StorageService],
+    bootstrap: [AppComponent]
+  })
+  
+  export class AppModule { }
+  ```
+
+  ![创建一个服务](./imgs/20200222204800.png)
+
+- 在组件中使用服务
+
+  在需要使用的组件中引入服务，然后再组件的构造函数中通过依赖注入的方式注入这个服务，就可以在组件中完成对于这个服务的数据使用
+
+  在父组件中对数据进行赋值
+
+  ```typescript
+  import { Component, OnInit } from '@angular/core';
+  
+  // 引入服务
+  import { StorageService } from '../services/storage/storage.service';
+  
+  @Component({
+    selector: 'app-parent-component',
+    templateUrl: './parent-component.component.html',
+    styleUrls: ['./parent-component.component.scss']
+  })
+  export class ParentComponentComponent implements OnInit {
+  
+    public msg = 'this is a service default value writen in parent component';
+  
+    constructor(private storage: StorageService) {
+      this.storage.setMsg(this.msg);
+    }
+  
+    ngOnInit(): void {
+    }
+  
+    submit() {
+      this.storage.setMsg(this.msg);
+    }
+  }
+  ```
+
+  ```html
+  <h2>父组件内容：</h2>
+  
+  <h3>3、通过服务在属性中共享数据</h3>
+  
+  <p>
+    修改服务中的数据值
+    <input type="text" [(ngModel)]="msg">
+    <button (click)="submit()">提交</button>
+  </p>
+  
+  <p>服务中的数据：{{msg}}</p>
+  
+  <hr>
+  
+  <h2>子组件内容：</h2>
+  
+  <app-child-component></app-child-component>
+  ```
+
+  在子组件中引入服务，从而获取到父组件修改后的服务信息
 
 
 

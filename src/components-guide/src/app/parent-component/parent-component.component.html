@@ -1,0 +1,38 @@
+<h2>父组件内容：</h2>
+
+<p>
+  <label for="title">标题：</label>
+  <input id="title" type="text" [(ngModel)]="title">
+</p>
+
+<h3>1、使用 @ViewChild 装饰器获取子组件数据</h3>
+
+<p>
+  <button (click)="getChildMsg()">获取子组件的 msg 数据</button>
+</p>
+
+<p>
+  <button (click)="runChildFunc()">调用子组件的方法</button>
+</p>
+
+<h3>2、使用 @Output 装饰器配合 EventEmitter 获取子组件数据</h3>
+
+<p>{{childMsg}}</p>
+
+<h3>3、通过服务在属性中共享数据</h3>
+
+<p>
+  修改服务中的数据值
+  <input type="text" [(ngModel)]="msg">
+  <button (click)="submit()">提交</button>
+</p>
+
+<p>服务中的数据：{{msg}}</p>
+
+<hr>
+
+<h2>子组件内容：</h2>
+
+<app-child-component #childComponent [parentTitle]="title" [parentGetMsg]='getMsg'
+  (childEmitter)='childEmitMsg($event)'>
+</app-child-component>

@@ -1,0 +1,18 @@
+<h2>父组件信息</h2>
+
+<p>lifecycle works!</p>
+
+<p>
+  <label for="msg">信息：</label>
+  <input type="text" name="" id="msg" [(ngModel)]="msg">
+</p>
+
+<p>
+  <button (click)="toggle()">隐藏 & 显示子组件</button>
+</p>
+
+<hr>
+
+<h2>子组件信息</h2>
+
+<app-lifecycle-child [parentMsg]='msg' *ngIf="flag"></app-lifecycle-child>

@@ -27,6 +27,8 @@ import { ChildComponentComponent } from './child-component/child-component.compo
 
 // 引入自定义的服务
 import { StorageService } from './services/storage/storage.service';
+import { LifecycleComponent } from './lifecycle/lifecycle.component';
+import { LifecycleChildComponent } from './lifecycle-child/lifecycle-child.component';
 
 /**
  * @NgModule() 装饰器，用来接收一个元数据对象，用来描述这个根模块
@@ -37,7 +39,9 @@ import { StorageService } from './services/storage/storage.service';
     AppComponent,
     ProductListComponent,
     ParentComponentComponent,
-    ChildComponentComponent
+    ChildComponentComponent,
+    LifecycleComponent,
+    LifecycleChildComponent
   ],
   // 引入当前模块能够正常运行时所需要依赖的别的模块
   imports: [

@@ -4,6 +4,9 @@ import { NgModule } from '@angular/core';
 // 引入 FormsModule
 import { FormsModule } from '@angular/forms';
 
+// 引入 ReactiveFormsModule
+import { ReactiveFormsModule } from '@angular/forms';
+
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ReactiveFormsComponent } from './reactive-forms/reactive-forms.component';
@@ -20,7 +23,8 @@ import { TemplateDrivenFormsComponent } from './template-driven-forms/template-d
   imports: [
     BrowserModule,
     AppRoutingModule,
-    FormsModule // 添加到应用模块中
+    FormsModule, // 添加到应用模块中
+    ReactiveFormsModule // 添加到应用模块中
   ],
   providers: [],
   bootstrap: [AppComponent]

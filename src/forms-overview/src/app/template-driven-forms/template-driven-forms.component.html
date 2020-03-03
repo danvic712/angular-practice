@@ -1,11 +1,11 @@
-<form (ngSubmit)="submit()" #heroForm="ngForm">
+<form (ngSubmit)="submit()" #heroForm="ngForm" appCrossFieldValidate>
   <div class="form-group">
     <label for="name">姓名：</label>
     <!--
       将 ngModel 指令通过模板引用变量的形式暴露出来，从而获取到控件的状态
      -->
     <input type="text" name="name" id="name" [(ngModel)]="hero.name" class="form-control" autocomplete="off" required
-      minlength="4" #name="ngModel">
+      minlength="4" #name="ngModel" appHeroValidate>
     <!--
       在用户有改动数据 or 访问控件之后才对数据的有效性进行验证
      -->
@@ -16,11 +16,17 @@
       <div *ngIf="name.errors.minlength">
         姓名信息不能少于 4 个字符长度
       </div>
+      <div *ngIf="name.errors.nameInvalid">
+        姓名无效
+      </div>
     </div>
   </div>
   <div class="form-group">
     <label for="age">年龄：</label>
     <input type="number" name="age" id="age" [(ngModel)]="hero.age" class="form-control" required>
+    <div *ngIf="heroForm.errors?.nameAgeInvalid && (heroForm.touched || heroForm.dirty)" class="alert alert-danger">
+      lala 不能是 12 岁
+    </div>
   </div>
   <div class="form-group">
     <label for="gender">性别：</label>

@@ -10,15 +10,17 @@ import { ReactiveFormsModule } from '@angular/forms';
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { ReactiveFormsComponent } from './reactive-forms/reactive-forms.component';
-import { DynamicFormsComponent } from './dynamic-forms/dynamic-forms.component';
 import { TemplateDrivenFormsComponent } from './template-driven-forms/template-driven-forms.component';
+import { HeroValidateDirective } from './direactives/hero-validate.directive';
+import { CrossFieldValidateDirective } from './direactives/cross-field/cross-field-validate.directive';
 
 @NgModule({
   declarations: [
     AppComponent,
     ReactiveFormsComponent,
-    DynamicFormsComponent,
-    TemplateDrivenFormsComponent
+    TemplateDrivenFormsComponent,
+    HeroValidateDirective,
+    CrossFieldValidateDirective
   ],
   imports: [
     BrowserModule,

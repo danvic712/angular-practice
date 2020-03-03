@@ -29,12 +29,19 @@
       <div *ngIf="name.errors.minlength">
         姓名信息不能少于 4 个字符长度
       </div>
+      <div *ngIf="name.errors.nameinvalid">
+        姓名无效
+      </div>
     </div>
   </div>
   <div class="form-group">
     <label for="age">年龄：</label>
     <input type="number" id="age" formControlName='age' class="form-control" autocomplete="off" required step="1"
       max="100" min="1">
+    <div *ngIf="profileForm.errors?.nameAgeInvalid && (profileForm.touched || profileForm.dirty)"
+      class="alert alert-danger">
+      lala 不能是 12 岁
+    </div>
   </div>
 
   <div formGroupName='address'>

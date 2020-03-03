@@ -1,13 +1,35 @@
 import { Component, OnInit } from '@angular/core';
 
 // 引入 FormControl 和 FormGroup 对象
-import { FormControl, FormGroup } from '@angular/forms';
+import { FormControl, FormGroup, ValidatorFn, ValidationErrors } from '@angular/forms';
 
 // 引入 FormBuilder 构建表单控件
 import { FormBuilder } from '@angular/forms';
 
 // 引入 Validators 验证器
 import { Validators } from '@angular/forms';
+
+/**
+ * 自定义验证方法
+ * @param name 控件信息
+ */
+function validatorName(name: FormControl) {
+  return name.value === 'lala' ? { nameinvalid: true } : null;
+}
+
+/**
+ * 跨字段验证
+ * @param controlGroup 控件组
+ */
+const nameAgeCrossValidator: ValidatorFn = (controlGroup: FormGroup): ValidationErrors | null => {
+
+  // 获取子控件的信息
+  //
+  const name = controlGroup.get('name');
+  const age = controlGroup.get('age');
+
+  return name && age && name.value === 'lala' && age.value === 12 ? { 'nameAgeInvalid': true } : null;
+};
 
 @Component({
   selector: 'app-reactive-forms',
@@ -37,7 +59,8 @@ export class ReactiveFormsComponent implements OnInit {
   public profileForm = this.formBuilder.group({
     name: ['', [
       Validators.required,
-      Validators.minLength(4)
+      Validators.minLength(4),
+      validatorName
     ]],
     age: [12],
     address: this.formBuilder.group({
@@ -46,7 +69,7 @@ export class ReactiveFormsComponent implements OnInit {
       district: ['朝阳区'],
       street: ['三里屯街道']
     })
-  });
+  }, { validators: [nameAgeCrossValidator] }); // 添加针对控件组的验证器
 
   // 添加需要验证控件 getter 方法，用来在模板中获取状态值
   get name() {

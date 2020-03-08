@@ -1,0 +1,36 @@
+<p>anti-motivational-quotes works!</p>
+
+<p>
+  <button (click)="getQuotes()">获取毒鸡汤</button> &nbsp;
+  <button (click)="getQuotesResponse()">获取毒鸡汤完整的响应信息</button>
+</p>
+<p>
+  接口返回信息: {{quoteResponse | json}}
+</p>
+<p>
+  接口完整的响应信息：{{quoteResponseInfo | json}}
+</p>
+<i>
+  毒鸡汤：{{quoteResponse?.data?.content}}
+</i>
+
+
+<hr>
+
+<p>
+  <button (click)="getYuiterSitemap()">获取非 json 对象的接口返回信息</button>
+</p>
+<p>
+  {{textResponse}}
+</p>
+
+<hr>
+
+<p>
+  <input type="text" name="quote" id="quote" [(ngModel)]="quote" style="width: 600px; height: 17px;margin-right: 10px;">
+  <button (click)="submit()">提交</button>
+</p>
+
+<p>
+  接口返回信息: {{submitQuoteResponse | json}}
+</p>

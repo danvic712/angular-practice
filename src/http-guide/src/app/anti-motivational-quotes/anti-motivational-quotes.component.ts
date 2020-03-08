@@ -37,6 +37,8 @@ export class AntiMotivationalQuotesComponent implements OnInit {
   getQuotes() {
     this.services.getAntiMotivationalQuotes().subscribe((response: GetQuotesResponseModel) => {
       this.quoteResponse = response;
+    }, error => {
+      console.error(error);
     });
   }
 

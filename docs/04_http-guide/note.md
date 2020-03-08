@@ -407,11 +407,95 @@ export class AntiMotivationalQuotesServicesService {
 
 
 
-### 2、错误信息拦截
+### 2、捕获错误信息
 
 #### 2.1、获取错误信息
 
+在涉及到前后端交互的过程中，不可避免会出现各种状况，在出现错误时，可以在 subscribe 方法中，添加第二个回调方法来获取错误信息
+
+```typescript
+getQuotes() {
+    this.services.getAntiMotivationalQuotes().subscribe((response: GetQuotesResponseModel) => {
+      this.quoteResponse = response;
+    }, error => {
+      console.error(error);
+    });
+}
+```
+
+![获取错误信息](./imgs/20200308190338.png)
+
+在处理错误信息的回调方法中，返回了一个 HttpErrorResponse 对象用来显示错误信息。因为这里的错误更多是服务中与后端进行通信产生的错误，因此对于错误信息的捕获和处理更应该放到服务中进行，而在组件处仅显示错误提示
+
+在服务中定义一个错误处理器，用来处理与后端请求中发生的错误
+
+```typescript
+import { Injectable } from '@angular/core';
+import { Observable, throwError } from 'rxjs';
+import { catchError, retry } from 'rxjs/operators';
+
+// 引入 HttpClient 类
+import { HttpClient, HttpResponse, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AntiMotivationalQuotesServicesService {
+
+  // 通过构造函数注入的方式依赖注入到使用的类中
+  constructor(private http: HttpClient) { }
+
+  /**
+   * 通过 get 请求获取毒鸡汤信息
+   */
+  getAntiMotivationalQuotes(): Observable<GetQuotesResponseModel> {
+    const url = 'https://api.tryto.cn/djt/text32';
+    return this.http.get<GetQuotesResponseModel>(url)
+      .pipe(
+        catchError(this.handleError)
+      );
+  }
+
+  /**
+   * 错误信息捕获处理
+   * @param error 错误信息
+   */
+  private handleError(error: HttpErrorResponse) {
+
+    if (error.error instanceof ErrorEvent) {
+      // 客户端本身引起的错误信息
+      console.error(`客户端错误：${error.error.message}`);
+    } else {
+      // 服务端返回的错误信息
+      console.error(`服务端错误：HTTP 状态码：${error.status} \n\r 错误信息：${JSON.stringify(error.error)}`);
+    }
+
+    // 反馈给用户的错误信息（用于组件中使用 error 回调时的错误提示）
+    return throwError('不好的事情发生了，毕竟我们都有不顺利的时候。。。');
+  }
+}
+```
+
+当请求发生错误时，通过在 HttpClient 方法返回的 Observable 对象中使用 pipe 管道将错误传递给自定义的错误处理器，从而完成捕获错误信息的后续操作
+
+![通过自定义的错误处理器完成错误信息的捕获](./imgs/20200308193136.png)
+
 #### 2.2、请求重试
+
+某些情况下存在因为特殊原因导致短时间的请求失败，在 pipe 管道中，当请求失败后，可以使用 retry 方法进行重试，在进行了多次重试后还是无法进行数据通信后，则进行错误捕获
+
+```typescript
+getAntiMotivationalQuotes(): Observable<GetQuotesResponseModel> {
+    const url = 'https://api.tryto.cn/djt/text32';
+    return this.http.get<GetQuotesResponseModel>(url)
+      .pipe(
+        retry(3), // 重试三次
+        catchError(this.handleError) // 捕获错误信息
+      );
+}
+```
+
+![请求失败后进行重试](./imgs/20200308194523.gif)
 
 
 

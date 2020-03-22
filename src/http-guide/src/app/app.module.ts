@@ -9,6 +9,9 @@ import { AppComponent } from './app.component';
 import { HttpClientModule } from '@angular/common/http';
 import { AntiMotivationalQuotesComponent } from './anti-motivational-quotes/anti-motivational-quotes.component';
 
+// 添加自定义拦截器
+import { HttpInterceptorProviders } from './http-interceptors/http-interceptor-providers';
+
 @NgModule({
   declarations: [
     AppComponent,
@@ -20,7 +23,9 @@ import { AntiMotivationalQuotesComponent } from './anti-motivational-quotes/anti
     FormsModule,
     HttpClientModule // 添加到根应用模块中
   ],
-  providers: [],
+  providers: [
+    HttpInterceptorProviders
+  ],
   bootstrap: [AppComponent]
 })
 export class AppModule { }

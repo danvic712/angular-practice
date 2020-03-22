@@ -28,7 +28,7 @@ export class AntiMotivationalQuotesServicesService {
    * 通过 get 请求获取毒鸡汤信息
    */
   getAntiMotivationalQuotes(): Observable<GetQuotesResponseModel> {
-    const url = 'https://api.tryto.cn/djt/text32';
+    const url = 'https://api.tryto.cn/djt/text';
     return this.http.get<GetQuotesResponseModel>(url)
       .pipe(
         retry(3), // 重试三次

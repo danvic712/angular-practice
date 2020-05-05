@@ -1,1 +1,11 @@
 <p>news works!</p>
+
+<button (click)="routerNavigate()">通过 js 的方式通过动态路由的方式传递数据</button>
+
+<ul>
+  <li *ngFor="let item of newsList; let i = index">
+    <a [routerLink]="['/news/detail', item.newsId]" routerLinkActive="active" >
+      {{item.title}}
+    </a>
+  </li>
+</ul>

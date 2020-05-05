@@ -7,6 +7,8 @@ import { ProductComponent } from './components/product/product.component';
 import { NewsComponent } from './components/news/news.component';
 import { HomeComponent } from './components/home/home.component';
 import { PagenotfoundComponent } from './components/pagenotfound/pagenotfound.component';
+import { NewsDetailComponent } from './components/news/news-detail/news-detail.component';
+import { ProductDetailComponent } from './components/product/product-detail/product-detail.component';
 
 @NgModule({
   declarations: [
@@ -14,7 +16,9 @@ import { PagenotfoundComponent } from './components/pagenotfound/pagenotfound.co
     ProductComponent,
     NewsComponent,
     HomeComponent,
-    PagenotfoundComponent
+    PagenotfoundComponent,
+    NewsDetailComponent,
+    ProductDetailComponent
   ],
   imports: [
     BrowserModule,

@@ -13,11 +13,13 @@ const routes: Routes = [
   { path: '', redirectTo: 'home', pathMatch: 'full' },
   { path: 'news', component: NewsComponent },
   { path: 'news/detail/:newsId', component: NewsDetailComponent },
-  { path: 'product', component: ProductComponent, children: [{
-    path: 'detail', component: ProductDetailComponent
-  },{
-    path: '', redirectTo: 'detail', pathMatch: 'full'
-  }]},
+  {
+    path: 'product', component: ProductComponent, children: [{
+      path: 'detail', component: ProductDetailComponent
+    }, {
+      path: '', redirectTo: 'detail', pathMatch: 'full'
+    }]
+  },
   { path: '**', component: PagenotfoundComponent },
 ];
 

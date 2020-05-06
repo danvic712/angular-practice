@@ -5,15 +5,13 @@
 
 
 
-
-
 ## Step by Step
 
 ### 1、基础概念
 
-在定义路由信息之前，需要指定当前应用的根目录信息，在浏览期间，Angular 路由会使用 base href 作为组件、模板和模块文件的基础路径地址
+#### 1.1、base url
 
-默认的情况下 app 文件夹是整个应用的根目录，则只需要在 index.html 中使用默认的 `<base href='/'>` 即可
+在 Angular 应用中，框架会自动将 index.html 文件中的 base url 配置作为组件、模板和模块文件的基础路径地址。默认的情况下 app 文件夹是整个应用的根目录，所以我们直接使用 index.html 中使用默认的 `<base href='/'>` 即可
 
 ```html
 <!doctype html>
@@ -31,7 +29,11 @@
 </html>
 ```
 
-在 Angular 中，需要将一个 url 地址映射到一个组件，因此需要手动的去设置对应的映射关系。在定义路由时，需要在文件中引入 Routes 和 RouterModule 从而进行路由地址的配置，最终在根模块中引入路由配置信息
+#### 1.2、路由的配置
+
+在 Angular 项目中，系统的路由需要我们将一个 url 地址映射到一个展示的组件，因此需要手动的去设置 url 与组件之间的映射关系
+
+因为我们在使用 Angular CLI 创建项目时，选择了添加路由模组，因此我们可以直接在 app-routing.module.ts 文件中完成路由的定义。最终我们定义的路由信息，都会在根模块中被引入到整个项目
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -79,15 +81,7 @@ export class AppModule { }
 
 ![路由配置](./imgs/20200329161124.png)
 
-默认情况下，系统都会有个默认跳转的地址，这里我们在定义路由信息时，定义了一个空路径用来表示系统的默认地址，用来将请求重定向到 `/home` 路径上，因为我们想要实现的是完整的 url 地址匹配空字符串时才进行重定向，所以这里需要指定匹配模式是全部匹配
-
-![默认地址重定向](./imgs/20200329195024.png)
-
-在解析路由信息时，是按照我们定义的顺序依次解析的，一旦匹配就会立即终止。因此，类似于 404 错误的这种通配的路由信息因为可以匹配上每个 url 地址，所以应该将路由的定义放到最后
-
-当定义好路由信息后，需要在页面上使用占位符用来渲染路由对应的组件信息，这里需要使用 `<router-outlet>` 标签来定义路由的出口
-
-当有地方可以渲染出匹配的路由信息后，就可以在 `a` 标签上通过使用 `RouterLink` 指令来进行路由的匹配
+当定义好路由信息后，我们需要在页面上使用 `<router-outlet>` 标签来告诉 Angular 在何处渲染出页面。对于路由之间的跳转，我们可以在 `a` 标签上通过使用 `RouterLink` 指令来绑定具体的路由来完成地址的跳转
 
 ```html
 <div class="card-container">
@@ -109,11 +103,38 @@ export class AppModule { }
 </div>
 ```
 
+#### 1.3、重定向与通配地址
+
+在普遍情况下，对于进入系统后的默认路径，我们会选择重定向到一个具体的地址上，这里我们在定义路由信息时，定义了一个空路径用来表示系统的默认地址，当用户请求时，重定向到 `/home` 路径上，因为只有完整的 url 地址匹配空字符串时才应该进行重定向操作，所以这里需要指定匹配模式是全部匹配
+
+![默认地址重定向](./imgs/20200329195024.png)
+
+```typescript
+const routes: Routes = [
+  { path: 'home', component: HomeComponent },
+  { path: '', redirectTo: 'home', pathMatch: 'full' }
+];
+```
+
+Angular 在解析路由时，是按照我们定义的顺序依次进行的，一旦匹配就会立即终止。因此，类似于 404 错误的这种通配的路由配置，因为可以匹配上每个 url 地址，所以应该将路由的定义放到最后
+
+```typescript
+const routes: Routes = [
+  { path: 'home', component: HomeComponent },
+  { path: '', redirectTo: 'home', pathMatch: 'full' },
+  { path: 'news', component: NewsComponent },
+  { path: 'product', component: ProductComponent },
+  { path: '**', component: PagenotfoundComponent },
+];
+```
+
 ![路由示例](./imgs/20200503201652.gif)
 
-从截图中可以看到，当我们打开系统时，会自动跳转到我们指定的 home 路径，点击菜单按钮后，则会加载对应的组件信息
+从截图中可以看到，当我们打开系统时，会自动跳转到我们指定的 home 路径，点击菜单按钮后，则会加载对应的组件页面
 
-在某些情况下，对于被选中的路由，可能需要添加一个特定的样式来提示用户，在我们定义 router-link 时，可以在  routerLinkActive 中绑定一个 class 类，当该链接对应的路由处于激活状态时，则添加上对应的样式类
+#### 1.4、激活的路由
+
+很多情况下，对于被选中的路由，我们可能会添加一个特定的样式来进行提示用户，因此，在我们定义 `router-link` 时，可以使用  `routerLinkActive` 属性绑定一个 css 的样式类，当该链接对应的路由处于激活状态时，则自动添加上指定的样式类
 
 ![激活状态的路由](./imgs/20200503202943.gif)
 
@@ -125,15 +146,15 @@ export class AppModule { }
 
 #### 2.1、query 查询参数传递
 
-最常见的一种参数传递的方式，在需要跳转的路由地址后面加上参数和对应的值，通过获取参数 key 获取对应的参数值
+最常见的一种参数传递的方式，在需要跳转的路由地址后面加上参数和对应的值，在跳转后的页面通过获取参数 key 从而获取到对应的参数值
 
-```text
-www.yoursite.com/product?productId=xxxx
+```html
+<a href="www.yoursite.com/product?productId=xxxx">跳转</a>
 ```
 
-对于直接通过 a 标签进行的路由跳转，我们可以在 a 标签上通过绑定 queryParams 属性来附加跳转页面时的查询参数信息
+对于直接通过 a 标签进行的路由跳转，我们可以在 a 标签上通过绑定 queryParams 属性来添加查询参数信息
 
-这里的 value 值可以是绑定一个组件中的属性进行动态的赋值，如果加上单引号，则代表这个参数值为一个固定的数值；因为这里绑定的是一个对象，所以我们可以添加多个参数，Angular 会自动的帮我们将这个对象参数在 url 中拼接起来
+这里通过 queryParams 属性绑定的是一个对象，Angular 会自动的帮我们将这个参数对象与 url 进行拼接。对于参数对象中的属性（key）对应的属性值（value），我们可以绑定一个组件中的属性进行动态的赋值，也可以通过添加单引号将参数值作为一个固定的数值，例如在下面代码中的两个查询参数就是固定的值
 
 ```html
 <a class="card" [routerLink]="[ '/news' ]" routerLinkActive="active" [queryParams]="{category:'social',date:'2020-05-02'}">News</a>
@@ -141,7 +162,7 @@ www.yoursite.com/product?productId=xxxx
 
 ![query 参数传值](./imgs/20200503211600.png)
 
-很多时候，我们需要在 js 中完成的路由跳转，对于这种使用场景，我们需要在进行 js 跳转的组件类中通过构造函数依赖注入 Router 类，之后通过 Router 类的 navigate 方法完成路由的跳转；对于查询参数，我们需要定义一个 NavigationExtras 类型的变量来进行设置
+同样的，我们也可以在 js 中完成路由的跳转，对于这种使用场景，我们需要在进行 js 跳转的组件类中通过构造函数依赖注入 Router 类，之后通过 Router 类的 navigate 方法完成路由的跳转；对于可能存在的查询参数，我们需要定义一个 NavigationExtras 类型的变量来进行设置
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
@@ -177,7 +198,7 @@ export class HomeComponent implements OnInit {
 }
 ```
 
-既然在进行跳转时选择传递参数信息，在跳转后的页面我们肯定要获取到对应的参数值进行操作，在跳转后的组件类中，需要依赖注入 ActivatedRoute 获取跳转传递的参数信息
+既然在进行跳转时附加了参数信息，在跳转后的页面我们肯定需要获取到传递的参数值。在 Angular 中，需要在组件类中依赖注入 ActivatedRoute 来获取传递的参数信息
 
 这里的 queryParamMap 是一个 Observable 对象，所以这里需要使用 subscribe 方法来获取传递的参数值
 
@@ -210,7 +231,7 @@ export class NewsComponent implements OnInit {
 
 #### 2.2、动态路由传递
 
-与在路由地址上添加查询参数不同，使用动态路由进行参数传值时，需要我们在定义路由时就提供参数的占位符信息，例如我们在下面定义路由时，需要在路径中指明需要的参数 newsId
+与使用查询参数不同，使用动态路由进行参数传值时，需要我们在定义路由时就提供参数的占位符信息，例如在下面定义路由的代码里，对于组件所需的参数 newsId，我们需要在定义路由时就指明
 
 ```typescript
 const routes: Routes = [
@@ -218,7 +239,7 @@ const routes: Routes = [
 ];
 ```
 
-与使用 query 查询参数传递数据参数数据不同，对于采用动态路由传递参数的形式进行的路由跳转，我们需要在 a 标签上绑定的 routerLink 属性值数组的第二个数据指定我们传递的参数值。例如这里的 item.newsId 这个变量就是我们需要传递的参数值
+对于采用动态路由进行的路由跳转，在 a 标签绑定的 routerLink 属性数组的第二个数据中，需要指定我们传递的参数值。例如这里的 item.newsId 这个变量就是我们需要传递的参数值
 
 ```html
 <ul>
@@ -230,7 +251,7 @@ const routes: Routes = [
 </ul>
 ```
 
-当采用 js 的方式进行跳转时，我们同样需要使用依赖注入的方式注入 Router 类，然后调用 navigate 方法。与使用 query 查询参数传递数据不同，需要将跳转的链接与对应的参数值组合成为一个数组参数进行传递
+而采用 js 的方式进行跳转时，我们同样需要使用依赖注入的方式注入 Router 类，然后调用 navigate 方法进行跳转。与使用 query 查询参数传递数据不同，此时需要将跳转的链接与对应的参数值组合成为一个数组参数进行传递
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
@@ -273,7 +294,7 @@ export class NewsComponent implements OnInit {
 }
 ```
 
-在跳转后的组件类中，需要依赖注入 ActivatedRoute 获取跳转传递的参数信息。因为是采用的动态路由的方式进行的参数传递，这里需要通过 paramMap 属性获取到对应的参数值
+在获取参数数据的组件类中，需要依赖注入 ActivatedRoute 类，因为是采用的动态路由的方式进行的参数传递，这里需要通过 paramMap 属性获取到对应的参数值
 
 ```typescript
 import { Component, OnInit } from '@angular/core';
@@ -304,12 +325,34 @@ export class NewsDetailComponent implements OnInit {
 
 ### 3、嵌套路由
 
-在一些情况下，路由是存在一种嵌套关系的，例如 Angular 官网资源这个页面左边的菜单，它只会在打开资源这个父级菜单后才会显示
+在一些情况下，路由是存在嵌套关系的，例如下面这个页面，只有当我们点击资源这个顶部的菜单后，它才会显示出左侧的这些菜单，也就是说这个页面左侧的菜单的父级菜单是顶部的资源菜单
 
 ![嵌套路由](./imgs/20200504154340.png)
 
-23
+针对这种具有嵌套关系的路由，在定义路由时，我们需要通过配置 children 属性来指定路由之间的嵌套关系，例如这里我定义 ProductDetailComponent 这个组件和 ProductComponent 组件形成的路由之间具有嵌套关系
 
 ```typescript
-
+// 配置路由信息
+const routes: Routes = [
+  {
+    path: 'product', component: ProductComponent, children: [{
+      path: 'detail', component: ProductDetailComponent
+    }, {
+      path: '', redirectTo: 'detail', pathMatch: 'full'
+    }]
+  }
+];
 ```
+
+因为子路由的渲染出口是在父路由的页面上，因此当嵌套路由配置完成之后，在嵌套的父级页面上，我们需要定义一个 `<router-outlet>` 标签用来指定子路由的渲染出口，最终的效果如下图所示
+
+```html
+<h3>我是父路由页面显示的内容</h3>
+<p>product works!</p>
+
+<!-- 加载子路由的数据 -->
+<h3>子路由组件渲染的出口</h3>
+<router-outlet></router-outlet>
+```
+
+![嵌套路由](./imgs/20200506202155.png)

@@ -11,7 +11,7 @@
 
 重复上一篇笔记的内容，搭建一个包含路由信息的项目
 
-新建三个组件，分别对应于两个实际使用到的页面与一个通配的 404 页面
+新建四个组件，分别对应于三个实际使用到的页面与一个通配的 404 页面
 
 ```powershell
 -- 危机中心页面
@@ -20,11 +20,14 @@ ng g component crisis-list
 -- 英雄中心页面
 ng g component hero-list
 
+-- 英雄相亲页面
+ng g component hero-detail
+
 -- 404 页面
 ng g component page-not-found 
 ```
 
-在 app-routing.module.ts 文件中完成路由的定义，这里包含了对于路由的重定向以及通配路由的使用
+在 app-routing.module.ts 文件中完成路由的定义，这里包含了对于路由的重定向、通配路由，以及使用动态路由传参的使用
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -33,6 +36,7 @@ import { Routes, RouterModule } from '@angular/router';
 // 引入组件
 import { CrisisListComponent } from './crisis-list/crisis-list.component';
 import { HeroListComponent } from './hero-list/hero-list.component';
+import { HeroDetailComponent } from './hero-detail/hero-detail.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 
 const routes: Routes = [
@@ -43,6 +47,10 @@ const routes: Routes = [
   {
     path: 'heroes',
     component: HeroListComponent,
+  },
+  {
+    path: 'hero/:id',
+    component: HeroDetailComponent,
   },
   {
     path: '',
@@ -59,7 +67,7 @@ const routes: Routes = [
   imports: [RouterModule.forRoot(routes)],
   exports: [RouterModule],
 })
-export class AppRoutingModule {}
+export class AppRoutingModule { }
 ```
 
 之后，在根组件中，添加 router-outlet 标签用来声明路由在页面上渲染的出口
@@ -78,6 +86,113 @@ export class AppRoutingModule {}
 
 
 ### 2、路由守卫
+
+在 Angular 中，路由守卫主要可以解决以下的问题
+
+- 对于用户访问页面的权限校验（是否已经登录？已经登录的角色是否有权限进入？）
+- 在跳转到组件前获取某些必须的数据
+- 离开页面时，提示用户是否保存未提交的修改
+
+Angular 路由模块提供了如下的几个接口用来帮助我们解决上面的问题
+
+- CanActivate：用来处理系统跳转到到某个路由地址的操作（判断是否可以进行访问）
+- CanActivateChild：功能同 CanActivate，只不过针对的是子路由
+- CanDeactivate：用来处理从当前路由离开的情况（判断是否存在未提交的信息）
+- CanLoad：是否允许通过延迟加载的方式加载某个模块 
+
+在添加了路由守卫之后，通过路由守卫返回的值，从而达到我们控制路由的目的
+
+- true：导航将会继续
+- false：导航将会中断，用户停留在当前的页面或者是跳转到指定的页面
+- UrlTree：取消当前的导航，并导航到路由守卫的这个 UrlTree 上（一个新的路由信息）
+
+#### 2.1、CanActivate：认证授权
+
+在实现路由守卫接口之前，我们需要通过 Angular CLI 命令来生成接口实现类，通过命令行，在 app/auth 路由下生成一个授权守卫类，CLI 会提示我们选择继承的路由守卫接口，这里选择 CanActivate 即可
+
+```shell
+ng g guard auth/auth
+```
+
+![创建路由守卫实现类](./imgs/20200526202420.png)
+
+在 AuthGuard 这个路由守卫类中，我们模拟对于一个路由地址的访问是否允许。首先判断是否已经登录了，如果登录后再判断当前登录人是否具有当前路由的访问权限
+
+```typescript
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate {
+
+  /**
+   * ctor
+   * @param router 路由
+   */
+  constructor(private router: Router) { }
+
+  canActivate(
+    next: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+
+    // 判断是否有 token 信息
+    let token = localStorage.getItem('auth-token');
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    // 判断是否可以访问当前连接
+    let url: string = state.url;
+    if (token === 'admin' && url === '/crisis-center') {
+      return true;
+    }
+
+    this.router.navigate(['/login']);
+    return false;
+  }
+}
+```
+
+之后我们就可以在 app-routing.module.ts 文件中引入 AuthGuard 类，针对需要保护的路由进行配置
+
+```typescript
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+// 引入组件
+import { CrisisListComponent } from './crisis-list/crisis-list.component';
+
+// 引入路由守卫
+import { AuthGuard } from './auth/auth.guard';
+
+const routes: Routes = [
+  {
+    path: 'crisis-center',
+    component: CrisisListComponent,
+    canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule { }
+```
+
+![使用 CanActivate 进行路由的认证授权](./imgs/20200526205721.gif)
+
+#### 2.2、CanActivateChild：针对子路由的认证授权
+
+#### 2.3、CanDeactivate：处理用户未提交的修改
+
+#### 2.2、Resolve：预先获取组件数据
+
+
 
 ### 3、惰性路由加载
 

@@ -1,11 +1,11 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router } from '@angular/router';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateChild } from '@angular/router';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard implements CanActivate {
+export class AuthGuard implements CanActivate, CanActivateChild {
 
   /**
    * ctor
@@ -26,11 +26,23 @@ export class AuthGuard implements CanActivate {
 
     // 判断是否可以访问当前连接
     let url: string = state.url;
-    if (token === 'admin' && url === '/crisis-center') {
+    if (token.indexOf('admin') !== -1 && url.indexOf('/crisis-center') !== -1) {
       return true;
     }
 
     this.router.navigate(['/login']);
     return false;
+  }
+
+  canActivateChild(
+    childRoute: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+    let token = localStorage.getItem('auth-token');
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    return token === 'admin-master';
   }
 }

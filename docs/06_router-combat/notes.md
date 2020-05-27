@@ -188,6 +188,124 @@ export class AppRoutingModule { }
 
 #### 2.2、CanActivateChild：针对子路由的认证授权
 
+与继承 CanActivate 接口进行路由守卫的方式相同，针对子路由可以通过继承  CanActivateChild 接口来达到对于子路由的认证授权，这里通过多重继承的方式，扩展 AuthGuard 的功能，从而达到同时针对路由和之路由的认证授权
+
+改造下原先 canActivate 方法的实现，判断用户的 token 信息中包含 admin 即可访问 crisis-center 页面，在针对子路由进行认证授权的 canActivateChild 方法中，通过判断 token 信息是否为 admin-master 模拟对于子路由的认证
+
+```typescript
+import { Injectable } from '@angular/core';
+import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateChild } from '@angular/router';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate, CanActivateChild {
+
+  /**
+   * ctor
+   * @param router 路由
+   */
+  constructor(private router: Router) { }
+
+  canActivate(
+    next: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+
+    // 判断是否有 token 信息
+    let token = localStorage.getItem('auth-token');
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    // 判断是否可以访问当前连接
+    let url: string = state.url;
+    if (token.indexOf('admin') !== -1 && url.indexOf('/crisis-center') !== -1) {
+      return true;
+    }
+
+    this.router.navigate(['/login']);
+    return false;
+  }
+
+  canActivateChild(
+    childRoute: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+    let token = localStorage.getItem('auth-token');
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    return token === 'admin-master';
+  }
+}
+```
+
+通过 Angular CLI 新增一个 crisis-detail 组件，作为 crisis-list 的子组件
+
+```shell
+ng g component crisis-detail
+```
+
+接下来在 crisis-list 中添加 router-outlet 标签，用来定义子路由的渲染出口
+
+```html
+<h2>危机中心</h2>
+
+<ul class="crises">
+  <li *ngFor="let crisis of crisisList">
+    <a [routerLink]="[crisis.id]">
+      <span class="badge">{{ crisis.id }}</span>{{ crisis.name }}
+    </a>
+  </li>
+</ul>
+
+<!-- 定义子路由的渲染出口 -->
+<router-outlet></router-outlet>
+```
+
+在针对子路由的认证授权配置时，我们可以选择针对每个子路由添加 canActivateChild 属性，也可以定义一个空地址的子路由，将所有归属于 crisis-list 的子路由作为这个空的子路由的子路由，通过针对这个空路径添加 canActivateChild 属性，从而达到将守护规则应用到所有的子路由上
+
+这里其实相当于将原先两级的路由模式（父：crisis-list，子：crisis-detail）改成了三级（父：crisis-list，子：crisis-list（空路径），孙：crisis-detail）
+
+```typescript
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+// 引入组件
+import { CrisisListComponent } from './crisis-list/crisis-list.component';
+import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
+
+// 引入路由守卫
+import { AuthGuard } from './auth/auth.guard';
+
+const routes: Routes = [
+  {
+    path: 'crisis-center',
+    component: CrisisListComponent,
+    canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
+    children: [{
+      path: '',
+      canActivateChild: [AuthGuard], // 添加针对子路由的 canActivate 路由守卫
+      children: [{
+        path: 'detail',
+        component: CrisisDetailComponent
+      }]
+    }]
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes)],
+  exports: [RouterModule],
+})
+export class AppRoutingModule { }
+```
+
+![使用 CanActivateChild 完成对于子路由的认证授权](./imgs/20200527202217.gif)
+
 #### 2.3、CanDeactivate：处理用户未提交的修改
 
 #### 2.2、Resolve：预先获取组件数据

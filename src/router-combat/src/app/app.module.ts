@@ -8,6 +8,7 @@ import { HeroListComponent } from './hero-list/hero-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { HeroDetailComponent } from './hero-detail/hero-detail.component';
 import { LoginComponent } from './auth/login/login.component';
+import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
 
 @NgModule({
   declarations: [
@@ -16,7 +17,8 @@ import { LoginComponent } from './auth/login/login.component';
     HeroListComponent,
     PageNotFoundComponent,
     HeroDetailComponent,
-    LoginComponent
+    LoginComponent,
+    CrisisDetailComponent
   ],
   imports: [
     BrowserModule,

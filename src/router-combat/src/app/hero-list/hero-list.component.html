@@ -1,2 +1,22 @@
 <h2>英雄中心</h2>
-<p>hero-list works!</p>
+<ul class="heroes">
+  <li *ngFor="let hero of heroList">
+    <a (click)="getHero(hero.id)">
+      <span class="badge">{{ hero.id }}</span>{{ hero.name }}
+    </a>
+  </li>
+</ul>
+
+
+<div *ngIf="hero">
+  <h3>"{{ hero.name }}"</h3>
+  <div>
+    <label>Id: </label>{{ hero.id }}</div>
+  <div>
+    <label>Name: </label>
+    <input [(ngModel)]="hero.name" placeholder="name" />
+  </div>
+  <p>
+    <button (click)="saveHero(hero)">Save</button>
+  </p>
+</div>

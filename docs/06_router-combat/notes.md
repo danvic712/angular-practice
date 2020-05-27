@@ -308,6 +308,8 @@ export class AppRoutingModule { }
 
 #### 2.3、CanDeactivate：处理用户未提交的修改
 
+在 CanDeactivate 中
+
 #### 2.2、Resolve：预先获取组件数据
 
 

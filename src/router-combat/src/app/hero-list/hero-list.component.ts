@@ -4,6 +4,11 @@ import { Component, OnInit } from '@angular/core';
 class Hero {
   id: number;
   name: string;
+
+  constructor(id: number, name: string) {
+    this.id = id;
+    this.name = name;
+  }
 }
 
 @Component({
@@ -40,7 +45,8 @@ export class HeroListComponent implements OnInit {
    * @param id 英雄主键
    */
   getHero(id: number) {
-    this.hero = this.heroList.find(hero => hero.id === id);
+    let data = this.heroList.find(hero => hero.id === id);
+    this.hero = new Hero(data.id, data.name);
   }
 
   saveHero(hero: Hero) {

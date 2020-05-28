@@ -1,3 +1,4 @@
+import { HeroCanDeactivateGuard } from './hero-list/guards/hero-can-deactivate.guard';
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
@@ -33,10 +34,11 @@ const routes: Routes = [
   {
     path: 'heroes',
     component: HeroListComponent,
+    canDeactivate: [HeroCanDeactivateGuard]
   },
   {
     path: 'hero/:id',
-    component: HeroDetailComponent,
+    component: HeroDetailComponent
   },
   {
     path: '',

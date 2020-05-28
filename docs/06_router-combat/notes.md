@@ -308,9 +308,90 @@ export class AppRoutingModule { }
 
 #### 2.3、CanDeactivate：处理用户未提交的修改
 
-在 CanDeactivate 中
+当进行表单填报之类的操作时，因为会涉及到一个提交的动作，当用户没有点击保存按钮就离开时，最好能暂停，对用户进行一个友好性的提示，由用户选择后续的操作
+
+创建一个路由守卫，继承于 CanDeactivate 接口
+
+```shell
+ng g guard hero-list/guards/hero-can-deactivate
+```
+
+与上面的 CanActivate、CanActivateChild 路由守卫不同，对于 CanDeactivate 守卫来说，我们需要将参数中的 unknown 替换成我们实际需要进行路由守卫的组件
+
+```typescript
+import { Injectable } from '@angular/core';
+import { CanDeactivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree } from '@angular/router';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class HeroCanDeactivateGuard implements CanDeactivate<unknown> {
+  canDeactivate(
+    component: unknown,
+    currentRoute: ActivatedRouteSnapshot,
+    currentState: RouterStateSnapshot,
+    nextState?: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+    return true;
+  }
+  
+}
+```
+
+例如，这里我是需要针对 HeroListComponent 这个组件进行的路由守卫，因此我们需要将泛型的参数 unknown 改为 HeroDetailComponent，通过 component 参数，我们可以对当前需要进行守卫的组件的数据进行校对确认
+
+```typescript
+import { Injectable } from '@angular/core';
+import {
+  CanDeactivate,
+  ActivatedRouteSnapshot,
+  RouterStateSnapshot,
+  UrlTree,
+} from '@angular/router';
+import { Observable } from 'rxjs';
+
+// 引入需要进行路由守卫的组件
+import { HeroListComponent } from '../hero-list.component';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class HeroCanDeactivateGuard
+  implements CanDeactivate<HeroListComponent> {
+  canDeactivate(
+    component: HeroListComponent,
+    currentRoute: ActivatedRouteSnapshot,
+    currentState: RouterStateSnapshot,
+    nextState?: RouterStateSnapshot
+  ):
+    | Observable<boolean | UrlTree>
+    | Promise<boolean | UrlTree>
+    | boolean
+    | UrlTree {
+
+    // 判断是否修改了原始数据
+    //
+    const data = component.hero;
+    if (data === undefined) {
+      return true;
+    }
+    const origin = component.heroList.find(hero => hero.id === data.id);
+    if (data.name === origin.name) {
+      return true;
+    }
+
+    return window.confirm('内容未提交，确认离开？');
+  }
+}
+```
+
+这里模拟比对用户有没有修改数据，当修改数据并移动到别的页面时，则提示用户是否离开当前页面
+
+![使用 CanDeactivate 处理用户未提交的修改](./imgs/20200528211923.gif)
 
 #### 2.2、Resolve：预先获取组件数据
+
+
 
 
 

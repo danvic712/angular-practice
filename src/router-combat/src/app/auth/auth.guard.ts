@@ -1,11 +1,13 @@
 import { Injectable } from '@angular/core';
-import { CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateChild } from '@angular/router';
+import {
+  CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateChild, CanLoad, Route, UrlSegment
+} from '@angular/router';
 import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
-export class AuthGuard implements CanActivate, CanActivateChild {
+export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 
   /**
    * ctor
@@ -13,12 +15,13 @@ export class AuthGuard implements CanActivate, CanActivateChild {
    */
   constructor(private router: Router) { }
 
+
   canActivate(
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     // 判断是否有 token 信息
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
       return false;
@@ -37,12 +40,27 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
       return false;
     }
 
     return token === 'admin-master';
+  }
+
+  canLoad(route: Route, segments: UrlSegment[]): boolean | Observable<boolean> | Promise<boolean> {
+    debugger;
+    let token = localStorage.getItem('auth-token') || '';
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    let url = `/${route.path}`;
+
+    if (token.indexOf('admin') !== -1 && url.indexOf('/crisis-center') !== -1) {
+      return true;
+    }
   }
 }

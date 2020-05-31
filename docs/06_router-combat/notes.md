@@ -139,7 +139,7 @@ export class AuthGuard implements CanActivate {
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     // 判断是否有 token 信息
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
       return false;
@@ -213,7 +213,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
     // 判断是否有 token 信息
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
       return false;
@@ -232,7 +232,7 @@ export class AuthGuard implements CanActivate, CanActivateChild {
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
-    let token = localStorage.getItem('auth-token');
+    let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
       return false;
@@ -389,11 +389,209 @@ export class HeroCanDeactivateGuard
 
 ![使用 CanDeactivate 处理用户未提交的修改](./imgs/20200528211923.gif)
 
-#### 2.2、Resolve：预先获取组件数据
 
 
+### 3、异步路由
+
+#### 3.1、惰性加载
+
+当应用逐渐扩大，使用现有的路由加载方式会造成应用在一开始就加载了全部的组件，从而导致系统首次渲染过慢。因此可以使用惰性加载的方式在请求时才加载对应的特性模块
+
+惰性加载只针对于模块（NgModule），因此为了使用惰性加载的特性，我们需要将系统按照功能划分，拆分出一个个独立的模块
+
+通过 Angular CLI 创建一个危机中心模块（crisis 模块）
+
+```powershell
+-- 查看创建模块的相关参数
+ng g module --help
+
+-- 创建危机中心模块（自动在 app.moudule.ts 中引入新创建的 CrisisModule、添加路由配置）
+ng g module crisis --module app --routing
+```
+
+将 crisis-list、crisis-detail 组件全部移动到 crisis 模块下面，并在 CrisisModule 中添加对于 crisis-list、crisis-detail 组件的声明，同时将原来在 app.module.ts 中声明的组件代码移除
+
+```typescript
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { CrisisRoutingModule } from './crisis-routing.module';
+
+import { FormsModule } from '@angular/forms';
+
+// 引入模块中使用到的组件
+import { CrisisListComponent } from './crisis-list/crisis-list.component';
+import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
 
 
+@NgModule({
+  declarations: [
+    CrisisListComponent,
+    CrisisDetailComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CrisisRoutingModule
+  ]
+})
+export class CrisisModule { }
+```
 
-### 3、惰性路由加载
+同样的，将模块的路由配置移动到 crisis 模块的路由文件 crisis-routing.module.ts 中，并将 app-routing.module.ts 中相关的路由配置删除
+
+```typescript
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+// 引入组件
+import { CrisisListComponent } from './crisis-list/crisis-list.component';
+import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
+
+// 引入路由守卫
+import { AuthGuard } from '../auth/auth.guard';
+
+const routes: Routes = [{
+  path: 'crisis-center',
+  component: CrisisListComponent,
+  canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
+  children: [{
+    path: '',
+    canActivateChild: [AuthGuard], // 添加针对子路由的 canActivate 路由守卫
+    children: [{
+      path: 'detail',
+      component: CrisisDetailComponent
+    }]
+  }]
+}];
+
+@NgModule({
+  imports: [RouterModule.forChild(routes)],
+  exports: [RouterModule]
+})
+export class CrisisRoutingModule { }
+```
+
+ 重新运行项目，打开系统，如果你在创建模块时使用了自动引入当前模块到 app.module.ts 文件中，大概率会遇到下面的问题
+
+![创建特性模块](./imgs/20200531155434.png)
+
+与配置通配路由需要放到最后的原因相似，因为脚手架在帮我们将自己创建的模块导入到 app.module.ts 中时，是添加到整个数据的最后的，同时因为我们已经将 crisis 模块的路由配置移动到专门的 crisis-routing.module.ts 中了，因此路由在匹配时已经匹配上 app-routing.module.ts 中的通配路由了，从而导致页面未找到的问题，因此这里我们需要将 AppRoutingModule 放到声明的最后
+
+![app.module.ts](./imgs/20200531155915.png)
+
+当模块创建完成后，就可以针对模块进行设置惰性加载
+
+在配置惰性路由时，我们需要类似于一种子路由的方式进行配置，通过路由的 loadChildren 属性来加载对应的模块，而不是具体的组件，修改后的 app-routing.module.ts 代码如下
+
+```typescript
+import { HeroCanDeactivateGuard } from './hero-list/guards/hero-can-deactivate.guard';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: 'crisis-center',
+    loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule)
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, { enableTracing: true })],
+  exports: [RouterModule],
+})
+export class AppRoutingModule { }
+```
+
+当导航到这个 /crisis-center 路由时，它会用 loadChildren  字符串来动态加载  CrisisModule，然后把 CrisisModule 添加到当前的路由配置中，而惰性加载和重新配置工作只会发生一次，也就是在该路由首次被请求时。在后续的请求中，该模块和路由都是立即可用的
+
+因为这里定义的路由路径其实是模块中的路由路径，因此在 crisis-routing.module.ts 中，我们可以将原来路由对应的路由配置修改成空路径（''）既可以
+
+![模块路由配置修改为空路径](./imgs/20200531163145.png)
+
+#### 3.2、CanLoad：杜绝未通过认证授权的组件加载
+
+在上面的代码中，对于 CrisisModule 模块我们已经使用 CanActivate、CanActivateChild 路由守卫来进行路由的认证授权，但是当我们没有权限访问该路由，却又点击时，路由仍会加载该模块.为了杜绝这种授权未通过仍加载的问题发生，这里需要使用 CanLoad 守卫
+
+因为这里的判断逻辑与认证授权的逻辑相同，因此在 AuthGuard 中，继承 CanLoad 接口即可，修改后的 AuthGuard 代码如下
+
+```typescript
+import { Injectable } from '@angular/core';
+import {
+  CanActivate, ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, Router, CanActivateChild, CanLoad, Route, UrlSegment
+} from '@angular/router';
+import { Observable } from 'rxjs';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
+
+  /**
+   * ctor
+   * @param router 路由
+   */
+  constructor(private router: Router) { }
+
+
+  canActivate(
+    next: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
+
+    // 判断是否有 token 信息
+    let token = localStorage.getItem('auth-token') || '';
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    // 判断是否可以访问当前连接
+    let url: string = state.url;
+    if (token.indexOf('admin') !== -1 && url.indexOf('/crisis-center') !== -1) {
+      return true;
+    }
+
+    this.router.navigate(['/login']);
+    return false;
+  }
+
+  canActivateChild(
+    childRoute: ActivatedRouteSnapshot,
+    state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+    let token = localStorage.getItem('auth-token') || '';
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    return token === 'admin-master';
+  }
+
+  canLoad(route: Route, segments: UrlSegment[]): boolean | Observable<boolean> | Promise<boolean> {
+    let token = localStorage.getItem('auth-token') || '';
+    if (token === '') {
+      this.router.navigate(['/login']);
+      return false;
+    }
+
+    let url = `/${route.path}`;
+
+    if (token.indexOf('admin') !== -1 && url.indexOf('/crisis-center') !== -1) {
+      return true;
+    }
+  }
+}
+```
+
+同样的，针对路由守卫配置完成后，添加到 crisis-center 路由的 canLoad 数组中
+
+```typescript
+{
+  path: 'crisis-center',
+  loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule),
+  canLoad: [AuthGuard]
+}
+```
+
+
 

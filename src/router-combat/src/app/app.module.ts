@@ -5,27 +5,27 @@ import { FormsModule } from '@angular/forms';
 
 import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
-import { CrisisListComponent } from './crisis-list/crisis-list.component';
 import { HeroListComponent } from './hero-list/hero-list.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
 import { HeroDetailComponent } from './hero-detail/hero-detail.component';
 import { LoginComponent } from './auth/login/login.component';
-import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
+
+// 添加自定义的模块
+import { CrisisModule } from './crisis/crisis.module';
 
 @NgModule({
   declarations: [
     AppComponent,
-    CrisisListComponent,
     HeroListComponent,
     PageNotFoundComponent,
     HeroDetailComponent,
-    LoginComponent,
-    CrisisDetailComponent
+    LoginComponent
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule,
-    FormsModule
+    FormsModule,
+    CrisisModule,
+    AppRoutingModule
   ],
   providers: [],
   bootstrap: [AppComponent]

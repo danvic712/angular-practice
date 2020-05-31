@@ -4,13 +4,9 @@ import { Routes, RouterModule } from '@angular/router';
 
 // 引入组件
 import { LoginComponent } from './auth/login/login.component';
-import { CrisisListComponent } from './crisis-list/crisis-list.component';
-import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
 import { HeroListComponent } from './hero-list/hero-list.component';
 import { HeroDetailComponent } from './hero-detail/hero-detail.component';
 import { PageNotFoundComponent } from './page-not-found/page-not-found.component';
-
-// 引入路由守卫
 import { AuthGuard } from './auth/auth.guard';
 
 const routes: Routes = [
@@ -19,22 +15,14 @@ const routes: Routes = [
     component: LoginComponent,
   },
   {
-    path: 'crisis-center',
-    component: CrisisListComponent,
-    canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
-    children: [{
-      path: '',
-      canActivateChild: [AuthGuard], // 添加针对子路由的 canActivate 路由守卫
-      children: [{
-        path: 'detail',
-        component: CrisisDetailComponent
-      }]
-    }]
-  },
-  {
     path: 'heroes',
     component: HeroListComponent,
     canDeactivate: [HeroCanDeactivateGuard]
+  },
+  {
+    path: 'crisis-center',
+    loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule),
+    canLoad: [AuthGuard]
   },
   {
     path: 'hero/:id',
@@ -52,7 +40,7 @@ const routes: Routes = [
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes)],
+  imports: [RouterModule.forRoot(routes, { enableTracing: true })],
   exports: [RouterModule],
 })
 export class AppRoutingModule { }

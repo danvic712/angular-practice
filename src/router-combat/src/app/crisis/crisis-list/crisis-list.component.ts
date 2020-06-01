@@ -1,11 +1,11 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, AfterViewInit } from '@angular/core';
 
 @Component({
   selector: 'app-crisis-list',
   templateUrl: './crisis-list.component.html',
   styleUrls: ['./crisis-list.component.scss']
 })
-export class CrisisListComponent implements OnInit {
+export class CrisisListComponent implements OnInit, AfterViewInit {
 
   crisisList: any[];
 
@@ -19,4 +19,7 @@ export class CrisisListComponent implements OnInit {
   ngOnInit(): void {
   }
 
+  ngAfterViewInit(): void {
+    console.log('CrisisListComponent has been init');
+  }
 }

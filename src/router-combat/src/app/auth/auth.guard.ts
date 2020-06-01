@@ -20,6 +20,8 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
     next: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): Observable<boolean | UrlTree> | Promise<boolean | UrlTree> | boolean | UrlTree {
 
+    console.log('============ canActivate ============');
+
     // 判断是否有 token 信息
     let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
@@ -40,6 +42,9 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
   canActivateChild(
     childRoute: ActivatedRouteSnapshot,
     state: RouterStateSnapshot): boolean | UrlTree | Observable<boolean | UrlTree> | Promise<boolean | UrlTree> {
+
+    console.log('============ canActivateChild ============');
+
     let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);
@@ -50,7 +55,9 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
   }
 
   canLoad(route: Route, segments: UrlSegment[]): boolean | Observable<boolean> | Promise<boolean> {
-    debugger;
+
+    console.log('============ canLoad ============');
+
     let token = localStorage.getItem('auth-token') || '';
     if (token === '') {
       this.router.navigate(['/login']);

@@ -9,9 +9,9 @@
 
 ### 1、基础准备
 
-重复上一篇笔记的内容，搭建一个包含路由信息的项目
+重复上一篇笔记的内容，搭建一个包含路由配置的 Angualr 项目
 
-新建四个组件，分别对应于三个实际使用到的页面与一个通配的 404 页面
+新建四个组件，分别对应于三个实际使用到的页面与一个设置为通配路由的 404 页面
 
 ```powershell
 -- 危机中心页面
@@ -27,7 +27,7 @@ ng g component hero-detail
 ng g component page-not-found 
 ```
 
-在 app-routing.module.ts 文件中完成路由的定义，这里包含了对于路由的重定向、通配路由，以及使用动态路由传参的使用
+在 app-routing.module.ts 文件中完成对于项目路由的定义，这里包含了对于路由的重定向、通配路由，以及通过动态路由进行参数传递的使用
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -104,11 +104,11 @@ Angular 路由模块提供了如下的几个接口用来帮助我们解决上面
 
 - true：导航将会继续
 - false：导航将会中断，用户停留在当前的页面或者是跳转到指定的页面
-- UrlTree：取消当前的导航，并导航到路由守卫的这个 UrlTree 上（一个新的路由信息）
+- UrlTree：取消当前的导航，并导航到路由守卫返回的这个 UrlTree 上（一个新的路由信息）
 
 #### 2.1、CanActivate：认证授权
 
-在实现路由守卫接口之前，我们需要通过 Angular CLI 命令来生成接口实现类，通过命令行，在 app/auth 路由下生成一个授权守卫类，CLI 会提示我们选择继承的路由守卫接口，这里选择 CanActivate 即可
+在实现路由守卫之前，可以通过 Angular CLI 来生成路由守卫的接口实现类，通过命令行，在 app/auth 路由下生成一个授权守卫类，CLI 会提示我们选择继承的路由守卫接口，这里选择 CanActivate 即可
 
 ```shell
 ng g guard auth/auth
@@ -116,7 +116,7 @@ ng g guard auth/auth
 
 ![创建路由守卫实现类](./imgs/20200526202420.png)
 
-在 AuthGuard 这个路由守卫类中，我们模拟对于一个路由地址的访问是否允许。首先判断是否已经登录了，如果登录后再判断当前登录人是否具有当前路由的访问权限
+在 AuthGuard 这个路由守卫类中，我们模拟了是否允许访问一个路由地址的认证授权。首先判断是否已经登录，如果登录后再判断当前登录人是否具有当前路由地址的访问权限
 
 ```typescript
 import { Injectable } from '@angular/core';
@@ -188,7 +188,7 @@ export class AppRoutingModule { }
 
 #### 2.2、CanActivateChild：针对子路由的认证授权
 
-与继承 CanActivate 接口进行路由守卫的方式相同，针对子路由可以通过继承  CanActivateChild 接口来达到对于子路由的认证授权，这里通过多重继承的方式，扩展 AuthGuard 的功能，从而达到同时针对路由和之路由的认证授权
+与继承 CanActivate 接口进行路由守卫的方式相似，针对子路由的认证授权可以通过继承  CanActivateChild 接口来实现，因为授权的逻辑很相似，这里通过多重继承的方式，扩展 AuthGuard 的功能，从而达到同时针对路由和子路由的路由守卫
 
 改造下原先 canActivate 方法的实现，判断用户的 token 信息中包含 admin 即可访问 crisis-center 页面，在针对子路由进行认证授权的 canActivateChild 方法中，通过判断 token 信息是否为 admin-master 模拟对于子路由的认证
 
@@ -266,9 +266,9 @@ ng g component crisis-detail
 <router-outlet></router-outlet>
 ```
 
-在针对子路由的认证授权配置时，我们可以选择针对每个子路由添加 canActivateChild 属性，也可以定义一个空地址的子路由，将所有归属于 crisis-list 的子路由作为这个空的子路由的子路由，通过针对这个空路径添加 canActivateChild 属性，从而达到将守护规则应用到所有的子路由上
+在针对子路由的认证授权配置时，我们可以选择针对每个子路由添加 canActivateChild 属性，也可以定义一个空地址的子路由，将所有归属于 crisis-list 的子路由作为这个空路由的子路由，通过针对这个空路径添加 canActivateChild 属性，从而实现将守护规则应用到所有的子路由上
 
-这里其实相当于将原先两级的路由模式（父：crisis-list，子：crisis-detail）改成了三级（父：crisis-list，子：crisis-list（空路径），孙：crisis-detail）
+这里其实相当于将原先两级的路由模式（父：crisis-list，子：crisis-detail）改成了三级（父：crisis-list，子：' '（空路径），孙：crisis-detail）
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -316,7 +316,7 @@ export class AppRoutingModule { }
 ng g guard hero-list/guards/hero-can-deactivate
 ```
 
-与上面的 CanActivate、CanActivateChild 路由守卫不同，对于 CanDeactivate 守卫来说，我们需要将参数中的 unknown 替换成我们实际需要进行路由守卫的组件
+与上面的 CanActivate、CanActivateChild 路由守卫的使用方式不同，对于 CanDeactivate 守卫来说，我们需要将参数中的 unknown 替换成我们实际需要进行路由守卫的组件
 
 ```typescript
 import { Injectable } from '@angular/core';
@@ -338,7 +338,7 @@ export class HeroCanDeactivateGuard implements CanDeactivate<unknown> {
 }
 ```
 
-例如，这里我是需要针对 HeroListComponent 这个组件进行的路由守卫，因此我们需要将泛型的参数 unknown 改为 HeroDetailComponent，通过 component 参数，我们可以对当前需要进行守卫的组件的数据进行校对确认
+例如，这里针对的是 HeroListComponent 这个组件，因此我们需要将泛型的参数 unknown 改为 HeroListComponent，通过 component 参数，就可以获得需要进行路由守卫的组件的相关信息
 
 ```typescript
 import { Injectable } from '@angular/core';
@@ -385,7 +385,7 @@ export class HeroCanDeactivateGuard
 }
 ```
 
-这里模拟比对用户有没有修改数据，当修改数据并移动到别的页面时，则提示用户是否离开当前页面
+这里模拟判断用户有没有修改原始的数据，当用户修改了数据并移动到别的页面时，触发路由守卫，提示用户是否保存后再离开当前页面
 
 ![使用 CanDeactivate 处理用户未提交的修改](./imgs/20200528211923.gif)
 
@@ -395,17 +395,17 @@ export class HeroCanDeactivateGuard
 
 #### 3.1、惰性加载
 
-当应用逐渐扩大，使用现有的路由加载方式会造成应用在一开始就加载了全部的组件，从而导致系统首次渲染过慢。因此可以使用惰性加载的方式在请求时才加载对应的特性模块
+当应用逐渐扩大，使用现有的路由加载方式会造成应用在第一次访问时就加载了全部的组件，从而导致系统首次渲染过慢。因此可以使用惰性加载的方式在请求具体的模块时才加载对应的组件
 
-惰性加载只针对于模块（NgModule），因此为了使用惰性加载的特性，我们需要将系统按照功能划分，拆分出一个个独立的模块
+惰性加载只针对于模块（NgModule），因此为了使用惰性加载这个特性，我们需要将系统按照功能划分，拆分出一个个独立的模块
 
-通过 Angular CLI 创建一个危机中心模块（crisis 模块）
+首先通过 Angular CLI 创建一个危机中心模块（crisis 模块）
 
 ```powershell
 -- 查看创建模块的相关参数
 ng g module --help
 
--- 创建危机中心模块（自动在 app.moudule.ts 中引入新创建的 CrisisModule、添加路由配置）
+-- 创建危机中心模块（自动在 app.moudule.ts 中引入新创建的 CrisisModule、添加当前模块的路由配置）
 ng g module crisis --module app --routing
 ```
 
@@ -438,7 +438,7 @@ import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
 export class CrisisModule { }
 ```
 
-同样的，将模块的路由配置移动到 crisis 模块的路由文件 crisis-routing.module.ts 中，并将 app-routing.module.ts 中相关的路由配置删除
+同样的，将当前模块的路由配置移动到专门的路由配置文件 crisis-routing.module.ts 中，并将 app-routing.module.ts 中相关的路由配置删除
 
 ```typescript
 import { NgModule } from '@angular/core';
@@ -472,17 +472,17 @@ const routes: Routes = [{
 export class CrisisRoutingModule { }
 ```
 
- 重新运行项目，打开系统，如果你在创建模块时使用了自动引入当前模块到 app.module.ts 文件中，大概率会遇到下面的问题
+ 重新运行项目，如果你在创建模块的命令中设置了自动引入当前模块到 app.module.ts 文件中，大概率会遇到下面的问题
 
 ![创建特性模块](./imgs/20200531155434.png)
 
-与配置通配路由需要放到最后的原因相似，因为脚手架在帮我们将自己创建的模块导入到 app.module.ts 中时，是添加到整个数据的最后的，同时因为我们已经将 crisis 模块的路由配置移动到专门的 crisis-routing.module.ts 中了，因此路由在匹配时已经匹配上 app-routing.module.ts 中的通配路由了，从而导致页面未找到的问题，因此这里我们需要将 AppRoutingModule 放到声明的最后
+这里的问题与配置通配路由需要放到最后的原因相似，因为脚手架在帮我们将创建的模块导入到 app.module.ts 中时，是添加到整个数组的最后的，同时因为我们已经将 crisis 模块的路由配置移动到专门的 crisis-routing.module.ts 中了，因此框架在路由匹配时已经匹配上 app-routing.module.ts 中设置的通配路由了，从而导致无法找到实际应该对应的组件，因此这里我们需要将 AppRoutingModule 放到声明的最后
 
 ![app.module.ts](./imgs/20200531155915.png)
 
-当模块创建完成后，就可以针对模块进行设置惰性加载
+当模块创建完成后，就可以针对 crisis 模块设置惰性加载
 
-在配置惰性路由时，我们需要类似于一种子路由的方式进行配置，通过路由的 loadChildren 属性来加载对应的模块，而不是具体的组件，修改后的 app-routing.module.ts 代码如下
+在配置惰性路由时，我们需要以一种类似于子路由的方式进行配置，通过路由的 loadChildren 属性来加载对应的模块，而不是具体的组件，修改后的 app-routing.module.ts 代码如下
 
 ```typescript
 import { HeroCanDeactivateGuard } from './hero-list/guards/hero-can-deactivate.guard';
@@ -503,15 +503,13 @@ const routes: Routes = [
 export class AppRoutingModule { }
 ```
 
-当导航到这个 /crisis-center 路由时，它会用 loadChildren  字符串来动态加载  CrisisModule，然后把 CrisisModule 添加到当前的路由配置中，而惰性加载和重新配置工作只会发生一次，也就是在该路由首次被请求时。在后续的请求中，该模块和路由都是立即可用的
-
-因为这里定义的路由路径其实是模块中的路由路径，因此在 crisis-routing.module.ts 中，我们可以将原来路由对应的路由配置修改成空路径（''）既可以
-
-![模块路由配置修改为空路径](./imgs/20200531163145.png)
+当导航到这个 /crisis-center 路由时，框架会通过 loadChildren 字符串来动态加载 CrisisModule，然后把 CrisisModule 添加到当前的路由配置中，而惰性加载和重新配置工作只会发生一次，也就是在该路由首次被请求时执行，在后续请求时，该模块和路由都是立即可用的
 
 #### 3.2、CanLoad：杜绝未通过认证授权的组件加载
 
-在上面的代码中，对于 CrisisModule 模块我们已经使用 CanActivate、CanActivateChild 路由守卫来进行路由的认证授权，但是当我们没有权限访问该路由，却又点击时，路由仍会加载该模块.为了杜绝这种授权未通过仍加载的问题发生，这里需要使用 CanLoad 守卫
+在上面的代码中，对于 CrisisModule 模块我们已经使用 CanActivate、CanActivateChild 路由守卫来进行路由的认证授权，但是当我们没有权限访问该路由，却点击时，框架路由仍会加载该模块。这里可以看到，我在 CanActivate 路由守卫中添加的 console.log 语句实际上已经执行了，为了杜绝这种授权未通过仍加载模块的问题发生，这里需要使用到 CanLoad 守卫
+
+![未通过认证授权任加载了组件](./imgs/20200531164127.gif)
 
 因为这里的判断逻辑与认证授权的逻辑相同，因此在 AuthGuard 中，继承 CanLoad 接口即可，修改后的 AuthGuard 代码如下
 
@@ -583,7 +581,7 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 }
 ```
 
-同样的，针对路由守卫配置完成后，添加到 crisis-center 路由的 canLoad 数组中
+同样的，针对路由守卫配置完成后，添加到 crisis-center 路由的 canLoad 数组中即可
 
 ```typescript
 {
@@ -592,6 +590,3 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
   canLoad: [AuthGuard]
 }
 ```
-
-
-

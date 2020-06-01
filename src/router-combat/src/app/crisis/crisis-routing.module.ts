@@ -9,7 +9,7 @@ import { AuthGuard } from '../auth/auth.guard';
 
 
 const routes: Routes = [{
-  path: '', // 修改成空路径
+  path: '',
   component: CrisisListComponent,
   canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
   children: [{

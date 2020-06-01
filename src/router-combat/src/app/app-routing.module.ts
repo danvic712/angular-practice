@@ -20,6 +20,11 @@ const routes: Routes = [
     canDeactivate: [HeroCanDeactivateGuard]
   },
   {
+    path: '',
+    redirectTo: '/heroes',
+    pathMatch: 'full',
+  },
+  {
     path: 'crisis-center',
     loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule),
     canLoad: [AuthGuard]
@@ -29,18 +34,16 @@ const routes: Routes = [
     component: HeroDetailComponent
   },
   {
-    path: '',
-    redirectTo: '/heroes',
-    pathMatch: 'full',
-  },
-  {
     path: '**',
     component: PageNotFoundComponent,
   }
 ];
 
 @NgModule({
-  imports: [RouterModule.forRoot(routes, { enableTracing: true })],
+  imports: [RouterModule.forRoot(
+    routes,
+    // { enableTracing: true }
+  )],
   exports: [RouterModule],
 })
 export class AppRoutingModule { }

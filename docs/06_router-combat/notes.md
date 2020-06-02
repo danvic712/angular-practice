@@ -452,7 +452,7 @@ import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
 import { AuthGuard } from '../auth/auth.guard';
 
 const routes: Routes = [{
-  path: 'crisis-center',
+  path: '',
   component: CrisisListComponent,
   canActivate: [AuthGuard], // 添加针对当前路由的 canActivate 路由守卫
   children: [{
@@ -507,9 +507,7 @@ export class AppRoutingModule { }
 
 #### 3.2、CanLoad：杜绝未通过认证授权的组件加载
 
-在上面的代码中，对于 CrisisModule 模块我们已经使用 CanActivate、CanActivateChild 路由守卫来进行路由的认证授权，但是当我们没有权限访问该路由，却点击时，框架路由仍会加载该模块。这里可以看到，我在 CanActivate 路由守卫中添加的 console.log 语句实际上已经执行了，为了杜绝这种授权未通过仍加载模块的问题发生，这里需要使用到 CanLoad 守卫
-
-![未通过认证授权任加载了组件](./imgs/20200531164127.gif)
+在上面的代码中，对于 CrisisModule 模块我们已经使用 CanActivate、CanActivateChild 路由守卫来进行路由的认证授权，但是当我们并没有权限访问该路由的权限，却依然点击了链接时，此时框架路由仍会加载该模块。为了杜绝这种授权未通过仍加载模块的问题发生，这里需要使用到 CanLoad 守卫
 
 因为这里的判断逻辑与认证授权的逻辑相同，因此在 AuthGuard 中，继承 CanLoad 接口即可，修改后的 AuthGuard 代码如下
 
@@ -581,12 +579,23 @@ export class AuthGuard implements CanActivate, CanActivateChild, CanLoad {
 }
 ```
 
-同样的，针对路由守卫配置完成后，添加到 crisis-center 路由的 canLoad 数组中即可
+同样的，针对路由守卫的实现完成后，将需要使用到的路由守卫添加到 crisis-center 路由的 canLoad 数组中即可
 
 ```typescript
-{
-  path: 'crisis-center',
-  loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule),
-  canLoad: [AuthGuard]
-}
+import { HeroCanDeactivateGuard } from './hero-list/guards/hero-can-deactivate.guard';
+import { NgModule } from '@angular/core';
+import { Routes, RouterModule } from '@angular/router';
+
+const routes: Routes = [
+  {
+    path: 'crisis-center',
+    loadChildren: () => import('./crisis/crisis.module').then(m => m.CrisisModule)
+  }
+];
+
+@NgModule({
+  imports: [RouterModule.forRoot(routes, { enableTracing: true })],
+  exports: [RouterModule],
+})
+export class AppRoutingModule { }
 ```

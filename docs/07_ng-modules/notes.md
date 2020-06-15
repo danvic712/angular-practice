@@ -111,3 +111,69 @@ Angular 应用通过引导根模块来启动的，因为会涉及到构建组件
 
 
 ### 3、特性模块
+
+特性模块是用来将特定的功能或具有相关特性的代码从其它代码中分离出来，聚焦于特定应用需求的一组功能，特性模块通过它提供的服务以及共享出的组件、指令和管道来与根模块和其它模块合作
+
+在上一章中，定义了一个 CrisisModule 用来包括包含与危机有关的功能模块，创建特性模块时可以通过 Angular CLI 命令行进行创建
+
+```powershell
+-- 创建名为 xxx 的特性模块
+ng new component xxx
+```
+
+```typescript
+import { NgModule } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { CrisisRoutingModule } from './crisis-routing.module';
+
+import { FormsModule } from '@angular/forms';
+
+import { CrisisListComponent } from './crisis-list/crisis-list.component';
+import { CrisisDetailComponent } from './crisis-detail/crisis-detail.component';
+
+
+@NgModule({
+  declarations: [
+    CrisisListComponent,
+    CrisisDetailComponent
+  ],
+  imports: [
+    CommonModule,
+    FormsModule,
+    CrisisRoutingModule
+  ]
+})
+export class CrisisModule { }
+```
+
+当创建完成后，为了将该特性模块包含到应用中，需要和使用 Angular 内置的 `BrowserModule`、`AppRoutingModule` 一样，在根模块中引入
+
+```typescript
+import { BrowserModule } from '@angular/platform-browser';
+import { NgModule } from '@angular/core';
+
+import { FormsModule } from '@angular/forms';
+
+import { AppRoutingModule } from './app-routing.module';
+import { AppComponent } from './app.component';
+
+// 添加自定义的模块
+import { CrisisModule } from './crisis/crisis.module';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule,
+    CrisisModule, // 引入自定义模块
+    AppRoutingModule
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+```
+

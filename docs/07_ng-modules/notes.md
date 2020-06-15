@@ -15,7 +15,18 @@
 
 在 Angular 应用中，至少会存在一个 NgModule，也就是应用的根模块（AppModule）,通过引导这个根模块就可以启动整个项目。而像开发中使用到 FormsModule、HttpClientModule 这种 Angular 内置的库也都是一个个的 NgModule，通过将组件、指令、管道、服务或其它的代码文件聚合成一个内聚的功能块，专注于某个功能模块
 
-#### 1.2、JavaScript 模块与 NgModule 
+#### 1.2、常见的 NgModule 模块
+
+| 模块名称                                                     | 模块所在文件                                               | 功能点                               |
+| ------------------------------------------------------------ | ---------------------------------------------------------- | ------------------------------------ |
+| [BrowserModule](https://angular.cn/api/platform-browser/BrowserModule) | @angular/platform-browser                                  | 用于启动和运行浏览器应用的的基本服务 |
+| [CommonModule](https://angular.cn/api/common/CommonModule)   | @angular/common                                            | 使用 NgIf、NgFor 之类的内置指令      |
+| [FormsModule](https://angular.cn/api/forms/FormsModule)      | @angular/forms                                             | 使用 NgModel 构建模板驱动表单        |
+| [ReactiveFormsModule](https://angular.cn/api/forms/ReactiveFormsModule) | @angular/forms                                             | 构建响应式表单                       |
+| [RouterModule](https://angular.cn/api/router/RouterModule)   | @angular/router                                            | 使用前端路由                         |
+| [HttpClientModule](https://angular.cn/api/common/http/HttpClientModule) | @angular/common/[http](https://angular.cn/api/common/http) | 发起 http 请求                       |
+
+#### 1.3、JavaScript 模块与 NgModule 
 
 在 JavaScript 中，每一个 js 文件就是一个模块，文件中定义的所有对象都从属于那个模块。 通过 `export` 关键字，模块可以把其中的某些对象声明为公共的，从而其它 JavaScript 模块可以使用 `import ` 语句来访问这些公共对象
 
@@ -83,11 +94,19 @@ export class AppModule { }
 
 `declarations` 数组告诉 Angular 哪些组件属于当前模块。 当创建新的组件时，需要将它们添加到 `declarations` 数组中。每个组件都只能声明在一个 `NgModule` 类中，同时如果你使用了未声明过的组件，Angular 就会报错
 
+同样的，对于当前模块使用到的自定义指令、自定义管道，也需要在 `declarations` 数组中进行定义
+
 #### 2.2、imports
+
+`imports` 数组表明当前模块正常工作时需要引入哪些的模块，例如这里使用到的 `BrowserModule`、`AppRoutingModule` 或者是我们使用双向数据绑定时使用到的 `FormsModule`
 
 #### 2.3、providers
 
+`providers` 数组定义了当前模块提供给当前应用的各项服务，例如一个用户模块，提供了获取当前登录用户信息的服务，因为应用中的其它地方也会存在调用的可能，因此，可以通过添加到 `providers` 数组中，提供给别的模块使用
+
 #### 2.4、bootstrap
+
+Angular 应用通过引导根模块来启动的，因为会涉及到构建组件树，形成实际的 DOM，因此需要在 `bootstrap` 数组中添加根组件用来作为组件树的根
 
 
 
